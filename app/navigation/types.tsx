@@ -1,7 +1,6 @@
 import { Recipe } from "../services/gemini";
 
 export type RootStackParamList = {
-  Splash: undefined;
   Login: undefined;
   Register: undefined;
   MainTabs: undefined;

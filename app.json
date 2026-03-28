@@ -1,48 +1,64 @@
 {
   "expo": {
-    "name": "recipegen-app",
+    "name": "RecipeGen",
     "slug": "recipegen-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/recipegen_logo.png",
     "scheme": "recipegenapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.recipegenapp"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/recipegen_logo.png",
+        "backgroundImage": "./assets/images/recipegen_logo.png",
+        "monochromeImage": "./assets/images/recipegen_logo.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.recipegenapp"
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/recipegen_logo.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/recipegen_logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#eb805a",
           "dark": {
-            "backgroundColor": "#000000"
+            "backgroundColor": "#eb805a"
           }
+        }
+      ],
+      [
+        "expo-asset",
+        {
+          "assets": [
+            "./assets/models/efficientnet.tflite"
+          ]
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "cf9d14a5-2f24-41b8-b8cf-7d59f7815bbf"
+      }
     }
   }
 }

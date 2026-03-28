@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useState } from "react";
@@ -17,6 +18,10 @@ import MyButton from "../components/MyButtton";
 import { useTheme } from "../context/ThemeContext";
 import { RootStackParamList } from "../navigation/types";
 import { generateRecipes } from "../services/gemini";
+import {
+  detectIngredientsFromImage,
+  pickImage,
+} from "../services/ingredientDetector";
 
 const timeOptions = ["<30m", "30-60m", "1h+"];
 const difficultyOptions = ["Easy", "Medium", "Hard"];
@@ -44,6 +49,44 @@ export default function HomeScreen() {
   const [selectedCuisine, setSelectedCuisine] = useState("Any");
   const [cuisineModalVisible, setCuisineModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [scanSourceModalVisible, setScanSourceModalVisible] = useState(false);
+
+  const handleScanIngredients = async (source: "camera" | "gallery") => {
+    setScanSourceModalVisible(false);
+    try {
+      const image = await pickImage(source);
+      if (!image) return;
+
+      setScanning(true);
+      const detectedIngredients = await detectIngredientsFromImage(image);
+
+      if (detectedIngredients.length === 0) {
+        Alert.alert(
+          "No Ingredients Found",
+          "Could not detect food ingredients in this image. Try a clearer photo or enter ingredients manually."
+        );
+        return;
+      }
+
+      const ingredientText = detectedIngredients.join(", ");
+      setIngredients((prev) =>
+        prev.trim() ? `${prev.trim()}, ${ingredientText}` : ingredientText
+      );
+
+      Alert.alert(
+        "Ingredients Detected!",
+        `Found: ${ingredientText}`,
+      );
+    } catch (error: any) {
+      Alert.alert(
+        "Detection Failed",
+        error.message || "Could not detect ingredients. Please try again."
+      );
+    } finally {
+      setScanning(false);
+    }
+  };
 
   const quickAdd = [
     "🥕 Carrot",
@@ -97,6 +140,67 @@ export default function HomeScreen() {
         value={ingredients}
         onChangeText={setIngredients}
       />
+
+      {/* Scan Ingredients Button */}
+      {scanning ? (
+        <View style={styles.scanLoadingContainer}>
+          <ActivityIndicator size="small" color={colors.primary} />
+          <Text style={[styles.scanLoadingText, { color: colors.gray }]}>
+            🔍 Detecting ingredients...
+          </Text>
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={[styles.scanButton, { backgroundColor: colors.card, borderColor: colors.primary }]}
+          activeOpacity={0.7}
+          onPress={() => setScanSourceModalVisible(true)}
+        >
+          <Ionicons name="camera-outline" size={22} color={colors.primary} />
+          <Text style={[styles.scanButtonText, { color: colors.primary }]}>
+            Scan Ingredients
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Scan Source Modal */}
+      <Modal
+        visible={scanSourceModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setScanSourceModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setScanSourceModalVisible(false)}
+        >
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              Scan Ingredients
+            </Text>
+            <TouchableOpacity
+              style={[styles.scanOption, { borderColor: colors.border }]}
+              activeOpacity={0.7}
+              onPress={() => handleScanIngredients("camera")}
+            >
+              <Ionicons name="camera" size={24} color={colors.primary} />
+              <Text style={[styles.scanOptionText, { color: colors.text }]}>
+                Take Photo
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.scanOption, { borderColor: colors.border }]}
+              activeOpacity={0.7}
+              onPress={() => handleScanIngredients("gallery")}
+            >
+              <Ionicons name="images" size={24} color={colors.primary} />
+              <Text style={[styles.scanOptionText, { color: colors.text }]}>
+                Choose from Gallery
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       <Text style={[styles.section, { color: colors.text }]}>Quick Add</Text>
 
@@ -340,5 +444,46 @@ const styles = StyleSheet.create({
   },
   modalOptionText: {
     fontSize: 16,
+  },
+  scanButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderStyle: "dashed",
+    marginBottom: 6,
+  },
+  scanButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  scanLoadingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    paddingVertical: 14,
+    marginBottom: 6,
+  },
+  scanLoadingText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  scanOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 10,
+  },
+  scanOptionText: {
+    fontSize: 16,
+    fontWeight: "500",
   },
 });

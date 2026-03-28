@@ -1,5 +1,5 @@
 import { CommonActions, useNavigation } from "@react-navigation/native";
-import React, { useState } from "react";
+import React from "react";
 import { Alert, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import MyButton from "../components/MyButtton";
 import { useAuth } from "../context/AuthContext";
@@ -10,7 +10,6 @@ export default function ProfileScreen() {
   const { user } = useAuth();
   const { colors, isDark, toggleTheme } = useTheme();
   const navigation = useNavigation();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   const userName = user?.user_metadata?.name || "User";
   const userEmail = user?.email || "No email";
@@ -73,16 +72,6 @@ export default function ProfileScreen() {
         <Switch
           value={isDark}
           onValueChange={toggleTheme}
-          trackColor={{ false: colors.border, true: colors.primary }}
-          thumbColor="#FFF"
-        />
-      </View>
-
-      <View style={[styles.cardRow, { backgroundColor: colors.card }]}>
-        <Text style={[styles.cardLabel, { color: colors.text }]}>Notifications</Text>
-        <Switch
-          value={notificationsEnabled}
-          onValueChange={setNotificationsEnabled}
           trackColor={{ false: colors.border, true: colors.primary }}
           thumbColor="#FFF"
         />

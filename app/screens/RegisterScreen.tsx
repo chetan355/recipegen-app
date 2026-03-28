@@ -16,6 +16,7 @@ export default function RegisterScreen({ }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   function toLogin() {
@@ -31,16 +32,28 @@ export default function RegisterScreen({ }) {
       Alert.alert("Error", "Passwords do not match");
       return;
     }
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { name } },
-    });
-    if (error) {
-      Alert.alert("Signup Error", error.message);
-    } else {
-      Alert.alert("Success", "Account created! Please login.");
-      router.navigate("/screens/LoginScreen");
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { name } },
+      });
+      if (error) {
+        Alert.alert("Signup Error", error.message);
+        setLoading(false);
+      } else {
+        setLoading(false);
+        Alert.alert("Success", "Account created! Please login.");
+        router.navigate("/screens/LoginScreen");
+      }
+    } catch (e: any) {
+      setLoading(false);
+      if (e.message?.includes("Network request failed") || e.name === "TypeError") {
+        Alert.alert("Network Error", "Please check your internet connection and try again.");
+      } else {
+        Alert.alert("Error", e.message || "An unexpected error occurred during registration.");
+      }
     }
   };
 
@@ -53,6 +66,7 @@ export default function RegisterScreen({ }) {
         placeholderTextColor={colors.gray}
         value={name}
         onChangeText={setName}
+        editable={!loading}
       />
       <TextInput
         style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.text }]}
@@ -60,6 +74,7 @@ export default function RegisterScreen({ }) {
         placeholderTextColor={colors.gray}
         value={email}
         onChangeText={setEmail}
+        editable={!loading}
       />
       <TextInput
         style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.text }]}
@@ -68,6 +83,7 @@ export default function RegisterScreen({ }) {
         secureTextEntry
         value={password}
         onChangeText={setPassword}
+        editable={!loading}
       />
       <TextInput
         style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.text }]}
@@ -76,8 +92,9 @@ export default function RegisterScreen({ }) {
         secureTextEntry
         value={confirmPassword}
         onChangeText={setConfirmPassword}
+        editable={!loading}
       />
-      <MyButton title={"Register"} onPress={registerUser} />
+      <MyButton title={"Register"} onPress={registerUser} loading={loading} />
       <TouchableOpacity onPress={toLogin}>
         <Text style={[styles.link, { color: colors.primary }]}>
           Already have an account? Login
